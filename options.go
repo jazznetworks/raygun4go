@@ -2,8 +2,6 @@ package raygun4go
 
 import (
 	"net/http"
-
-	"github.com/MindscapeHQ/raygun4go/output"
 )
 
 // Silent sets the silent-property on the Client. If true, errors will not be
@@ -49,7 +47,7 @@ func (c *Client) User(u string) *Client {
 
 // OutputHandler is a chainable option-setting method to change the
 // handler-function used for output
-func (c *Client) OutputHandler(f output.Handler) *Client {
+func (c *Client) Output(f OutputHandler) *Client {
 	c.outputHandler = f
 	return c
 }

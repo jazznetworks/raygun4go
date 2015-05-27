@@ -9,14 +9,13 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 
-	"github.com/MindscapeHQ/raygun4go/output"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestClient(t *testing.T) {
 	Convey("Client", t, func() {
 		c, _ := New("app", "key")
-		c.Silent(true).OutputHandler(output.Mute)
+		c.Silent(true).Output(OutputMute)
 		So(c.appName, ShouldEqual, "app")
 		So(c.apiKey, ShouldEqual, "key")
 		So(c.context.Request, ShouldBeNil)
@@ -90,7 +89,7 @@ func TestClient(t *testing.T) {
 			defer ts.Close()
 			raygunEndpoint = ts.URL
 			c, _ := New("app", "key")
-			c.Silent(false).OutputHandler(output.Mute)
+			c.Silent(false).Output(OutputMute)
 			c.apiKey = "key"
 			c.CreateError("Test: See if this works with Raygun")
 		})

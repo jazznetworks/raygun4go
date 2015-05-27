@@ -44,8 +44,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MindscapeHQ/raygun4go/output"
-
 	"code.google.com/p/go-uuid/uuid"
 )
 
@@ -56,7 +54,7 @@ type Client struct {
 	apiKey        string             // the api key for your raygun app
 	context       contextInformation // optional context information
 	silent        bool               // if true, the error is printed instead of sent to Raygun
-	outputHandler output.Handler     // a handler function for output of the error handler
+	outputHandler OutputHandler      // a handler function for output of the error handler
 }
 
 // contextInformation holds optional information on the context the error
@@ -87,7 +85,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false, output.Log}
+	c = &Client{appName, apiKey, context, false, OutputLog}
 	return c, nil
 }
 

@@ -42,8 +42,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
+
+	"github.com/MindscapeHQ/raygun4go/output"
 
 	"code.google.com/p/go-uuid/uuid"
 )
@@ -51,10 +52,11 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName string             // the name of the app
-	apiKey  string             // the api key for your raygun app
-	context contextInformation // optional context information
-	silent  bool               // if true, the error is printed instead of sent to Raygun
+	appName       string             // the name of the app
+	apiKey        string             // the api key for your raygun app
+	context       contextInformation // optional context information
+	silent        bool               // if true, the error is printed instead of sent to Raygun
+	outputHandler output.Handler     // a handler function for output of the error handler
 }
 
 // contextInformation holds optional information on the context the error
@@ -85,7 +87,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false}
+	c = &Client{appName, apiKey, context, false, output.Log}
 	return c, nil
 }
 
@@ -130,6 +132,13 @@ func (c *Client) User(u string) *Client {
 	return c
 }
 
+// OutputHandler is a chainable option-setting method to change the
+// handler-function used for output
+func (c *Client) OutputHandler(f output.Handler) *Client {
+	c.outputHandler = f
+	return c
+}
+
 // HandleError sets up the error handling code. It needs to be called with
 //
 //   defer c.HandleError()
@@ -143,10 +152,15 @@ func (c *Client) HandleError() {
 		if !ok {
 			err = errors.New(e.(string))
 		}
-		log.Println("Recovering from:", err.Error())
+		c.log(fmt.Sprintf("Recovering from: %s", err.Error()))
 		post := c.createPost(err, currentStack())
 		c.submit(post)
 	}
+}
+
+// log calls the registered output.Handler-function with the given message.
+func (c *Client) log(message string) {
+	c.outputHandler(message)
 }
 
 // createPost creates the data structure that will be sent to Raygun.
@@ -166,31 +180,31 @@ func (c *Client) CreateError(message string) {
 func (c *Client) submit(post postData) {
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
-		fmt.Println(string(enc))
+		c.log(string(enc))
 		return
 	}
 
 	json, err := json.Marshal(post)
 	if err != nil {
-		log.Printf("Unable to convert to JSON (%s): %#v\n", err.Error(), post)
+		c.log(fmt.Sprintf("Unable to convert to JSON (%s): %#v\n", err.Error(), post))
 		return
 	}
 
 	r, err := http.NewRequest("POST", raygunEndpoint+"/entries", bytes.NewBuffer(json))
 	if err != nil {
-		log.Printf("Unable to create request (%s)\n", err.Error())
+		c.log(fmt.Sprintf("Unable to create request (%s)\n", err.Error()))
 		return
 	}
 	r.Header.Add("X-ApiKey", c.apiKey)
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
 	if err != nil {
-		log.Println(err.Error())
+		c.log(err.Error())
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 202 {
-		log.Println("Successfully sent message to Raygun")
+		c.log("Successfully sent message to Raygun")
 	} else {
-		log.Println("Unexpected answer from Raygun:", resp.StatusCode)
+		c.log(fmt.Sprintf("Unexpected answer from Raygun: %s", resp.StatusCode))
 	}
 }

@@ -96,7 +96,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 //   defer c.HandleError()
 //
 // to handle all panics inside the calling function and all calls made from it.
-// Be sure to call this in your main function or (if it is webserver) in your
+// Be sure to call this in your main function or (if it is a webserver) in your
 // request handler as soon as possible.
 func (c *Client) HandleError() {
 	if e := recover(); e != nil {

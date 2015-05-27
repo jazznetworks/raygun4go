@@ -45,7 +45,7 @@ func (c *Client) User(u string) *Client {
 	return c
 }
 
-// OutputHandler is a chainable option-setting method to change the
+// Output is a chainable option-setting method to change the
 // handler-function used for output
 func (c *Client) Output(f OutputHandler) *Client {
 	c.outputHandler = f

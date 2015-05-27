@@ -155,6 +155,6 @@ func (c *Client) submit(post postData) {
 	if resp.StatusCode == 202 {
 		c.log("Successfully sent message to Raygun")
 	} else {
-		c.log(fmt.Sprintf("Unexpected answer from Raygun: %s", resp.StatusCode))
+		c.log(fmt.Sprintf("Unexpected answer from Raygun: %d", resp.StatusCode))
 	}
 }

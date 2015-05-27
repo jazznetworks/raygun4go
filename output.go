@@ -7,12 +7,12 @@ import "log"
 type OutputHandler func(string) error
 
 // OutputLog is an OutputHandler that logs the given message
-var OutputLog OutputHandler = func(message string) error {
+func OutputLog(message string) error {
 	log.Println(message)
 	return nil
 }
 
 // OutputMute is a OutputHandler that does nothing with the given message
-var OutputMute OutputHandler = func(message string) error {
+func OutputMute(message string) error {
 	return nil
 }

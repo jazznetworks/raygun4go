@@ -162,10 +162,10 @@ func (c *Client) HandleError() error {
 	}
 
 	post := c.createPost(err, currentStack())
-	err = c.submit(post)
+	posterr := c.submit(post)
 
-	if c.logToStdOut && err != nil {
-		log.Println(err.Error())
+	if c.logToStdOut && posterr != nil {
+		log.Println(posterr.Error())
 	}
 	return err
 }
